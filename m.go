@@ -4,7 +4,6 @@ import (
 	"coolstory.eu/gurmag/fishing"
 	"fmt"
 	"github.com/go-vgo/robotgo"
-	"os"
 	"time"
 )
 
@@ -12,30 +11,31 @@ func main() {
 
 	finder := fishing.CreateBobberFinder()
 
+	for true {
+		robotgo.KeyTap("3")
+		time.Sleep(1 * time.Second)
 
-		pos := finder.FindBobber()
+
+		pos := finder.FindBobber(nil)
 		fmt.Print(pos)
 		if nil != pos {
 
-			bobberMissingTicks := 0
-			for i := 0; i < 500; i++ {
-				if finder.CheckBait(pos) {
-					fmt.Print("missing")
-					bobberMissingTicks++
-				} else {
-					bobberMissingTicks = 0
-				}
-				if bobberMissingTicks >= 10 {
-					fmt.Print("bait?")
+			bait := fishing.CreateBaitDetector()
+			bait.CheckBait(pos)
+			Wait: for i := 0; i < 200; i++ {
+				if bait.CheckBait(finder.FindBobber(pos)) {
 					robotgo.Move(pos.X, pos.Y)
 					robotgo.Click("right")
-					os.Exit(1)
+					break Wait
 				}
-				time.Sleep(50 * time.Millisecond)
+				time.Sleep(100 * time.Millisecond)
 			}
-
-
 		}
+
+		time.Sleep(2 * time.Second)
+
+	}
+
 
 
 }

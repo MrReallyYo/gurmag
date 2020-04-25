@@ -8,7 +8,7 @@ import (
 )
 
 type BobberFinder interface {
-	FindBobber() *image.Point
+	FindBobber(knownPosition *image.Point) *image.Point
 }
 
 func CreateBobberFinder() BobberFinder {
@@ -22,24 +22,31 @@ func newBobberFinderImpl() BobberFinderImpl {
 type BobberFinderImpl struct {
 }
 
-func (bf BobberFinderImpl) FindBobber() *image.Point {
-	w, h := robotgo.GetScreenSize()
-	searchW := int(float64(w) * 0.8)
-	searchH := int(float64(h) * 0.8)
-	var found *image.Point
+func (bf BobberFinderImpl) FindBobber(knownPosition *image.Point) *image.Point {
+
 	screen := robotgo.CBitmap(robotgo.CaptureScreen())
-Search:
-	for y := 0; y < searchH; y++ {
-		for x := 0; x < searchW; x++ {
-			found = bf.check(screen, x, y)
-			if nil != found {
-				break Search
-			}
+	var found *image.Point
+
+	search := func(x, y int) bool {
+		found = bf.check(screen, x, y)
+		if nil != found {
+			fmt.Printf("bobber @ %v, %v\n", found.X, found.Y)
 		}
+		return nil != found
+	}
+
+	if nil != knownPosition {
+		seachNearby(knownPosition.X, knownPosition.Y, 50, 50, 50, 50, search)
+	} else {
+		w := 2560
+		h := 1440
+		w, h = robotgo.GetScreenSize()
+		seachNearby(200, 200, 0, w-400, 0, h-400, search)
 	}
 	return found
 }
 
+const verbose = false
 
 func (bf BobberFinderImpl) check(screen robotgo.CBitmap, x int, y int) *image.Point {
 	if redFeather(screen, x, y) && blueFeather(screen, x, y) && bobber(screen, x, y) && glow(screen, x, y) && hook(screen, x, y) {
@@ -76,10 +83,9 @@ func color(screen robotgo.CBitmap, x int, y int) (r int, g int, b int) {
 	return int((color >> 16) & 0xFF), int((color >> 8) & 0xFF), int((color) & 0xFF)
 }
 
-
 func isRed(screen robotgo.CBitmap, x, y int) bool {
-	red := 2.1
-	minRed := 40
+	red := 2.0
+	minRed := 80
 	r, g, b := color(screen, x, y)
 	return r >= minRed && r > int(float64(g)*red) && r > int(float64(b)*red)
 }
@@ -98,7 +104,9 @@ func redFeather(screen robotgo.CBitmap, x, y int) bool {
 			}
 			return false
 		}) {
-			fmt.Printf("maybe bobber RED FEATHER @ %v, %v\n", x, y)
+			if verbose {
+				fmt.Printf("maybe bobber RED FEATHER @ %v, %v\n", x, y)
+			}
 			return true
 		}
 	}
@@ -109,7 +117,7 @@ func blueFeather(screen robotgo.CBitmap, x, y int) bool {
 
 	isBlue := func(screen robotgo.CBitmap, a, c int) bool {
 		blue := 1.1
-		minBlue := 40
+		minBlue := 60
 		r, g, b := color(screen, a, c)
 		return b >= minBlue && b > int(float64(r)*blue) && b > int(float64(g)*blue) && g > r
 	}
@@ -126,7 +134,9 @@ func blueFeather(screen robotgo.CBitmap, x, y int) bool {
 		}
 		return false
 	}) {
-		fmt.Printf("maybe bobber BLUE FEATHER @ %v, %v\n", x, y)
+		if verbose {
+			fmt.Printf("maybe bobber BLUE FEATHER @ %v, %v\n", x, y)
+		}
 		return true
 	}
 
@@ -154,7 +164,9 @@ func bobber(screen robotgo.CBitmap, x, y int) bool {
 		}
 		return false
 	}) {
-		fmt.Printf("maybe bobber BODY @ %v, %v\n", x, y)
+		if verbose {
+			fmt.Printf("maybe bobber BODY @ %v, %v\n", x, y)
+		}
 		return true
 	}
 
@@ -182,7 +194,9 @@ func glow(screen robotgo.CBitmap, x, y int) bool {
 		}
 		return false
 	}) {
-		fmt.Printf("maybe bobber GLOW @ %v, %v\n", x, y)
+		if verbose {
+			fmt.Printf("maybe bobber GLOW @ %v, %v\n", x, y)
+		}
 		return true
 	}
 
@@ -192,9 +206,9 @@ func glow(screen robotgo.CBitmap, x, y int) bool {
 func hook(screen robotgo.CBitmap, x, y int) bool {
 
 	isHook := func(screen robotgo.CBitmap, a, c int) bool {
-		minR := 160
+		minR := 70
 		r, g, b := color(screen, a, c)
-		return r >= minR && r < g && r < b
+		return r >= minR && r <= g && r <= b
 	}
 
 	hookPixel := 5
@@ -209,7 +223,9 @@ func hook(screen robotgo.CBitmap, x, y int) bool {
 		}
 		return false
 	}) {
-		fmt.Printf("maybe bobber HOOK @ %v, %v\n", x, y)
+		if verbose {
+			fmt.Printf("maybe bobber HOOK @ %v, %v\n", x, y)
+		}
 		return true
 	}
 
