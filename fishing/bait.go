@@ -28,7 +28,7 @@ func (bd *BaitDetectorImpl) CheckBait(position *image.Point) bool {
 		return false
 	}
 	if bd.once && (math.Abs(float64(bd.left - position.X)) > 50 || math.Abs(float64(bd.top - position.Y)) > 50) {
-		fmt.Print("Skipping outlier")
+		fmt.Printf("Skipping outlier %v\n", position)
 		return false
 	}
 
@@ -59,5 +59,5 @@ func (bd *BaitDetectorImpl) detect() bool {
 	h := bd.bottom - bd.top
 
 	fmt.Printf("[%v, %v - %v, %v]\n", x, y, w, h)
-	return w >= 15 || h >= 15
+	return w >= 20 || h >= 20
 }
