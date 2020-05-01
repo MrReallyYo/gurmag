@@ -1,7 +1,7 @@
 package main
 
 import (
-	"coolstory.eu/gurmag/fishing"
+	"coolstory.eu/gurmag/fishingold"
 	"github.com/go-vgo/robotgo"
 	"testing"
 )
@@ -41,9 +41,9 @@ func runTest(t *testing.T, file string, shouldFind bool) {
 }
 
 func test(file string) bool {
-	finder := fishing.CreateBobberFinder()
+	finder := fishingold.CreateBobberFinder()
 	screen := robotgo.CBitmap(robotgo.OpenBitmap(file))
-	pos := finder.FindBobber(&screen,nil)
+	pos := finder.FindBobber(&screen, nil)
 	robotgo.FreeBitmap(robotgo.ToMMBitmapRef(screen))
 	return nil != pos
 }

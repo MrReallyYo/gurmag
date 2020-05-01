@@ -1,4 +1,4 @@
-package fishing
+package fishingold
 
 import (
 	"fmt"
@@ -19,19 +19,18 @@ func newBaitDetectorImpl() BaitDetector {
 }
 
 type BaitDetectorImpl struct {
-	left,top, right, bottom int
-	once bool
+	left, top, right, bottom int
+	once                     bool
 }
 
 func (bd *BaitDetectorImpl) CheckBait(position *image.Point) bool {
 	if nil == position {
 		return false
 	}
-	if bd.once && (math.Abs(float64(bd.left - position.X)) > 50 || math.Abs(float64(bd.top - position.Y)) > 50) {
+	if bd.once && (math.Abs(float64(bd.left-position.X)) > 50 || math.Abs(float64(bd.top-position.Y)) > 50) {
 		fmt.Printf("Skipping outlier %v\n", position)
 		return false
 	}
-
 
 	if !bd.once || position.X < bd.left {
 		bd.left = position.X

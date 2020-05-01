@@ -1,4 +1,4 @@
-package fishing
+package fishingold
 
 import "C"
 import (
